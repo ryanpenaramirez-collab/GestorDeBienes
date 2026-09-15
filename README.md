@@ -1,0 +1,1 @@
+Gestor de Bienes es un programa hecho para abogados en Colombia. Sirve para calcular cómo se debe repartir un patrimonio (por ejemplo, una herencia, o los bienes de un matrimonio que se separa) entre las personas que tienen derecho a recibir una parte, aplicando las leyes correspondientes.
