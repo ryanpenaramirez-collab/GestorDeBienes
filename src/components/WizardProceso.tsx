@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProcesoParticion, Ley, HonorariosConfig, Persona, BaseCalculoLey } from '../types';
+import { ProcesoParticion, Ley, HonorariosConfig, Persona, BaseCalculoLey, ResultadoParticion } from '../types';
 import { calcularParticion, formatearMoneda } from '../utils/calculator';
 import {
   alternarLeyConExclusionMutua,

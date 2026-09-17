@@ -14,15 +14,55 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [emailLogin, setEmailLogin] = useState<string>(
     perfil.correo || 'alejandro.restrepo@gestordebienes.legal'
   );
-  const [passwordLogin, setPasswordLogin] = useState<string>('••••••••');
-  const [mostrarPassword, setMostrarPassword] = useState<boolean>(false);
+  const [pinLogin, setPinLogin] = useState<string>('');
+  const [mostrarPin, setMostrarPin] = useState<boolean>(false);
   const [recordarSesion, setRecordarSesion] = useState<boolean>(true);
   const [errorLogin, setErrorLogin] = useState<string | null>(null);
+
+  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value;
+    // Filtrar para aceptar estrictamente dígitos numéricos y limitar a 6 dígitos
+    const digitsOnly = rawVal.replace(/\D/g, '').slice(0, 6);
+    setPinLogin(digitsOnly);
+    if (errorLogin) setErrorLogin(null);
+  };
+
+  const handlePinKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Permitir teclas de navegación, control y edición estándar
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      'Enter',
+      'Home',
+      'End',
+    ];
+    if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+      return;
+    }
+    // Bloquear inmediatamente si no es un dígito
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+    // Bloquear si ya tiene 6 dígitos y no hay selección de texto para reemplazar
+    const input = e.currentTarget;
+    const hasSelection = (input.selectionEnd ?? 0) - (input.selectionStart ?? 0) > 0;
+    if (pinLogin.length >= 6 && !hasSelection) {
+      e.preventDefault();
+    }
+  };
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!emailLogin.trim()) {
       setErrorLogin('Por favor ingrese su correo electrónico profesional o nombre de usuario.');
+      return;
+    }
+    if (!pinLogin) {
+      setErrorLogin('Por favor ingrese el PIN de seguridad.');
       return;
     }
     setErrorLogin(null);
@@ -31,7 +71,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   const handleAccesoRapido = () => {
     setEmailLogin(perfil.correo || 'alejandro.restrepo@gestordebienes.legal');
-    setPasswordLogin('abogado2026');
+    setPinLogin('123456');
     setErrorLogin(null);
     onIniciarSesion();
   };
@@ -54,7 +94,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         {/* Tarjeta de Inicio de Sesión Profesional */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs space-y-6">
-          <div className="text-center space-y-1.5 border-b border-slate-100 pb-4">
+          <div className="text-center space-y-2 border-b border-slate-100 pb-4 flex flex-col items-center">
+            {perfil.fotoPerfil ? (
+              <img
+                src={perfil.fotoPerfil}
+                alt={perfil.nombre || 'Foto del Abogado'}
+                referrerPolicy="no-referrer"
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-200 shadow-2xs mb-1"
+              />
+            ) : null}
             <h2 className="text-base font-bold text-slate-900 font-serif">
               Inicio de Sesión Profesional
             </h2>
@@ -90,34 +138,46 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               />
             </div>
 
+            {/* PIN de Seguridad (6 dígitos) */}
             <div className="space-y-1.5">
               <label
-                htmlFor="login-standalone-password"
+                htmlFor="login-standalone-pin"
                 className="text-xs font-bold text-slate-700 flex items-center gap-1.5"
               >
                 <Lock className="w-3.5 h-3.5 text-slate-700" />
-                <span>Contraseña o PIN de Seguridad</span>
+                <span>PIN de Seguridad (6 dígitos)</span>
               </label>
               <div className="relative">
                 <input
-                  id="login-standalone-password"
-                  type={mostrarPassword ? 'text' : 'password'}
-                  value={passwordLogin}
-                  onChange={(e) => setPasswordLogin(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-white border border-slate-300 rounded-lg pl-3.5 pr-9 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
+                  id="login-standalone-pin"
+                  type={mostrarPin ? 'text' : 'password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={pinLogin}
+                  onChange={handlePinChange}
+                  onKeyDown={handlePinKeyDown}
+                  placeholder="••••••"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3.5 pr-20 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs tracking-widest"
+                  autoComplete="off"
                   required
                 />
                 <button
                   type="button"
-                  onClick={() => setMostrarPassword(!mostrarPassword)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 cursor-pointer"
-                  title={mostrarPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  onClick={() => setMostrarPin(!mostrarPin)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-900 cursor-pointer transition-colors select-none"
+                  title={mostrarPin ? 'Ocultar PIN' : 'Mostrar PIN'}
                 >
-                  {mostrarPassword ? (
-                    <EyeOff className="w-3.5 h-3.5" />
+                  {mostrarPin ? (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5" />
+                      <span>Ocultar</span>
+                    </>
                   ) : (
-                    <Eye className="w-3.5 h-3.5" />
+                    <>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Mostrar</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -171,3 +231,4 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     </div>
   );
 };
+

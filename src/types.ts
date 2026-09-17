@@ -16,6 +16,7 @@ export interface PerfilAbogado {
   especialidad: string;
   leyendaNotarial?: string;
   registrado: boolean;
+  fotoPerfil?: string; // Data URL o URL de la foto de perfil
 }
 
 export interface AjustesApp {

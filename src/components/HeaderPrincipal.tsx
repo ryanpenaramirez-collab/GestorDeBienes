@@ -5,27 +5,16 @@ import { PerfilAbogado } from '../types';
 export interface HeaderPrincipalProps {
   vistaActual: 'home' | 'wizard' | 'config-leyes' | 'config-honorarios' | 'config-general';
   onNavegar: (vista: 'home' | 'wizard' | 'config-leyes' | 'config-honorarios' | 'config-general') => void;
-  perfilAbogado: PerfilAbogado;
-  sesionActiva: boolean;
+  perfilAbogado?: PerfilAbogado;
+  sesionActiva?: boolean;
   notificacion?: string | null;
 }
 
 export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
   vistaActual,
   onNavegar,
-  perfilAbogado,
-  sesionActiva,
   notificacion,
 }) => {
-  const formatearNombreAbogado = (nombre: string) => {
-    if (!nombre) return 'Dr. Abogado Titular';
-    const nombreLimpio = nombre.trim();
-    if (nombreLimpio.toLowerCase().startsWith('dr.') || nombreLimpio.toLowerCase().startsWith('dra.')) {
-      return nombreLimpio;
-    }
-    return `Dr. ${nombreLimpio}`;
-  };
-
   return (
     <header className="bg-slate-900 text-white px-6 py-2.5 flex items-center justify-between border-b border-slate-800 shrink-0 z-20 shadow-xs select-none">
       {/* 1. Nombre de la aplicación */}
@@ -91,26 +80,6 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
         >
           <Settings className="w-3.5 h-3.5" />
           <span>Configuración</span>
-        </button>
-
-        {/* Separador vertical */}
-        <div className="h-4 w-px bg-slate-700 mx-1 hidden sm:block" />
-
-        {/* Perfil del Abogado con prefijo "Dr." */}
-        <button
-          type="button"
-          id="hdr-btn-perfil-usuario"
-          onClick={() => onNavegar('config-general')}
-          className="hidden sm:inline-flex items-center gap-2 pl-2 pr-3 py-1 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition cursor-pointer"
-          title="Ver perfil profesional del abogado"
-        >
-          <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-900 flex items-center justify-center text-[10px] font-bold">
-            {perfilAbogado.nombre ? perfilAbogado.nombre.charAt(0).toUpperCase() : 'D'}
-          </div>
-          <span className="truncate max-w-[150px]">
-            {formatearNombreAbogado(perfilAbogado.nombre)}
-          </span>
-          {sesionActiva && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Sesión activa" />}
         </button>
       </div>
 

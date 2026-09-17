@@ -18,6 +18,10 @@ import {
   ExternalLink,
   Link as LinkIcon,
   AlertCircle,
+  Camera,
+  Upload,
+  Trash2,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { PerfilAbogado, AjustesApp } from '../types';
 
@@ -220,9 +224,18 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
               {/* Tarjeta de Estado de Sesión */}
               <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-serif text-lg font-bold shrink-0 shadow-xs">
-                    {perfil.nombre ? perfil.nombre.charAt(0) : 'A'}
-                  </div>
+                  {perfil.fotoPerfil ? (
+                    <img
+                      src={perfil.fotoPerfil}
+                      alt={perfil.nombre || 'Foto del Abogado'}
+                      referrerPolicy="no-referrer"
+                      className="w-12 h-12 rounded-xl object-cover border border-slate-300 shadow-xs shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-serif text-lg font-bold shrink-0 shadow-xs">
+                      {perfil.nombre ? perfil.nombre.charAt(0) : 'A'}
+                    </div>
+                  )}
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold text-slate-900">
@@ -264,6 +277,108 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
                   <LogOut className="w-3.5 h-3.5 text-slate-700" />
                   <span>Cerrar Sesión</span>
                 </button>
+              </div>
+
+              {/* Apartado: Foto de Perfil */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-2xs space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <Camera className="w-4 h-4 text-slate-900" />
+                      Foto de Perfil
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Personalice la imagen oficial del titular del despacho. Los cambios quedarán pendientes hasta presionar "Aplicar Cambios".
+                    </p>
+                  </div>
+                  {perfil.fotoPerfil !== perfilGuardado.fotoPerfil ? (
+                    <BadgeTag icon={<span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block" />}>
+                      Cambio pendiente
+                    </BadgeTag>
+                  ) : (
+                    <BadgeTag>
+                      {perfil.fotoPerfil ? 'Foto personalizada' : 'Ícono por defecto'}
+                    </BadgeTag>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-1">
+                  {/* Vista previa de la foto actual o ícono genérico */}
+                  <div className="relative group shrink-0">
+                    {perfil.fotoPerfil ? (
+                      <div className="relative">
+                        <img
+                          src={perfil.fotoPerfil}
+                          alt={perfil.nombre || 'Foto de perfil del abogado'}
+                          referrerPolicy="no-referrer"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-300 shadow-sm bg-slate-50"
+                        />
+                        <span className="absolute -bottom-1.5 -right-1.5 bg-emerald-700 text-white rounded-full p-1 shadow-xs" title="Foto cargada">
+                          <Check className="w-3 h-3" />
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 text-slate-400 flex flex-col items-center justify-center gap-1 shadow-2xs"
+                        title="Ícono genérico por defecto"
+                      >
+                        <User className="w-8 h-8 sm:w-9 sm:h-9 text-slate-400" />
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Por defecto</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Botones de acción para subir o eliminar foto */}
+                  <div className="space-y-2 flex-1">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <label
+                        htmlFor="input-subir-foto-perfil"
+                        className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{perfil.fotoPerfil ? 'Cambiar Foto desde el Computador' : 'Subir Foto de Perfil'}</span>
+                      </label>
+                      <input
+                        id="input-subir-foto-perfil"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const base64 = ev.target?.result as string;
+                              if (base64) {
+                                setPerfil((prev) => ({ ...prev, fotoPerfil: base64 }));
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                          // Limpiar para permitir volver a seleccionar el mismo archivo si se desea
+                          e.target.value = '';
+                        }}
+                      />
+
+                      {perfil.fotoPerfil && (
+                        <button
+                          type="button"
+                          id="btn-eliminar-foto-perfil"
+                          onClick={() => setPerfil((prev) => ({ ...prev, fotoPerfil: undefined }))}
+                          className="inline-flex items-center gap-1.5 bg-white hover:bg-red-50 text-red-700 hover:text-red-800 text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-red-200 cursor-pointer shadow-2xs"
+                          title="Eliminar foto y volver al ícono genérico por defecto"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                          <span>Eliminar Foto</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 leading-relaxed max-w-xl">
+                      Formatos soportados: JPG, PNG, WEBP o SVG. Se redimensiona automáticamente. Si elimina la foto, se restablecerá el ícono genérico por defecto del sistema.
+                    </p>
+                  </div>
+                </div>
               </div>
 
                   {/* Formulario de Información Profesional del Abogado */}

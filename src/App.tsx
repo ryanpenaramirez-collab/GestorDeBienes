@@ -39,7 +39,8 @@ export default function App() {
   const [honorariosGenerales, setHonorariosGenerales] = useState<HonorariosConfig>(obtenerHonorariosGenerales());
   const [perfilAbogado, setPerfilAbogado] = useState<PerfilAbogado>(obtenerPerfilAbogado());
   const [ajustesApp, setAjustesApp] = useState<AjustesApp>(obtenerAjustesApp());
-  const [sesionActiva, setSesionActiva] = useState<boolean>(obtenerEstadoSesion());
+  // Siempre iniciar con sesión inactiva (false) al cargar la aplicación desde cualquier enlace o ruta
+  const [sesionActiva, setSesionActiva] = useState<boolean>(false);
   const [notificacion, setNotificacion] = useState<string | null>(null);
 
   // Sincronizar tema visual y densidad activa confirmada con el documento raíz y body
@@ -54,15 +55,18 @@ export default function App() {
     setVista(nuevaVista);
   };
 
-  // Cargar datos locales al montar
+  // Cargar datos locales al montar: siempre forzar inicio en LoginScreen
   useEffect(() => {
+    // Al abrir la aplicación o acceder desde cualquier enlace, limpiar cualquier sesión previa activa
+    guardarEstadoSesion(false);
+    setSesionActiva(false);
+
     const listProcesos = obtenerProcesosPendientes();
     setProcesos(listProcesos);
     setLeyesGenerales(obtenerLeyesGenerales());
     setHonorariosGenerales(obtenerHonorariosGenerales());
     setPerfilAbogado(obtenerPerfilAbogado());
     setAjustesApp(obtenerAjustesApp());
-    setSesionActiva(obtenerEstadoSesion());
   }, []);
 
   const mostrarMensajeNotificacion = (texto: string) => {
