@@ -39,6 +39,7 @@ interface Paso2PersonasYLeyesProps {
   resultado?: ResultadoParticion;
   onAgregarPersona: (nueva: Omit<Persona, 'id'>) => void;
   onActualizarPersona: (persona: Persona) => void;
+  onActualizarPersonas?: (personas: Persona[]) => void;
   onEliminarPersona: (id: string) => void;
   onToggleLey: (id: string) => void;
   onActualizarPorcentajeLey: (id: string, nuevoPct: number) => void;
@@ -57,6 +58,7 @@ export const Paso2PersonasYLeyes: React.FC<Paso2PersonasYLeyesProps> = ({
   resultado,
   onAgregarPersona,
   onActualizarPersona,
+  onActualizarPersonas,
   onEliminarPersona,
   onToggleLey,
   onActualizarPorcentajeLey,
@@ -171,9 +173,15 @@ export const Paso2PersonasYLeyes: React.FC<Paso2PersonasYLeyesProps> = ({
   const handleDistribuirPartesIguales = () => {
     if (personas.length === 0) return;
     const pct = Math.round((100 / personas.length) * 100) / 100;
-    personas.forEach((p) => {
-      onActualizarPersona({ ...p, porcentajeParticipacion: pct });
-    });
+    const actualizadas: Persona[] = personas.map((p) => ({
+      ...p,
+      porcentajeParticipacion: pct,
+    }));
+    if (onActualizarPersonas) {
+      onActualizarPersonas(actualizadas);
+    } else {
+      actualizadas.forEach((p) => onActualizarPersona(p));
+    }
   };
 
   const puedeAvanzar = esRepartoValido && personas.length > 0;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
   Settings,
@@ -21,7 +21,6 @@ import {
   Camera,
   Upload,
   Trash2,
-  Image as ImageIcon,
 } from 'lucide-react';
 import { PerfilAbogado, AjustesApp } from '../types';
 
@@ -95,6 +94,15 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
 
   // Feedback de guardado
   const [guardadoFeedback, setGuardadoFeedback] = useState<boolean>(false);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current !== null) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const hayCambiosPerfil = JSON.stringify(perfil) !== JSON.stringify(perfilGuardado);
   const hayCambiosAjustes = JSON.stringify(ajustes) !== JSON.stringify(ajustesGuardados);
@@ -120,19 +128,25 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
 
   // Solo al presionar "Aplicar Cambios", los ajustes y perfil se aplican permanentemente
   const handleAplicarCambios = () => {
-    if (perfil.sitioWeb && !esUrlValida(perfil.sitioWeb)) {
+    if (hayCambiosPerfil && perfil.sitioWeb && !esUrlValida(perfil.sitioWeb)) {
       setErrorUrl('Ingrese una dirección URL válida (ejemplo: https://despacho.legal o www.firma.com)');
       return;
     }
     setErrorUrl(null);
-    onGuardarPerfil(perfil);
-    setPerfilGuardado({ ...perfil });
-
-    onGuardarAjustes(ajustes);
-    setAjustesGuardados({ ...ajustes });
+    if (hayCambiosPerfil) {
+      onGuardarPerfil(perfil);
+      setPerfilGuardado({ ...perfil });
+    }
+    if (hayCambiosAjustes) {
+      onGuardarAjustes(ajustes);
+      setAjustesGuardados({ ...ajustes });
+    }
 
     setGuardadoFeedback(true);
-    setTimeout(() => setGuardadoFeedback(false), 3000);
+    if (feedbackTimerRef.current !== null) {
+      clearTimeout(feedbackTimerRef.current);
+    }
+    feedbackTimerRef.current = setTimeout(() => setGuardadoFeedback(false), 3000);
   };
 
   // Descartar cambios: revierte los controles al estado guardado

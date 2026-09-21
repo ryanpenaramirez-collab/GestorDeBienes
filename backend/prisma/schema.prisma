@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// PERFIL DEL ABOGADO (modelo Abogado)
+// ============================================
+model Abogado {
+  id                String    @id @default(cuid())
+  nombre            String
+  tarjetaProfesional String  @default("")
+  documentoIdentidad String  @default("")
+  despachoFirma     String    @default("")
+  sitioWeb          String?
+  correo            String    @unique
+  telefono          String    @default("")
+  ciudad            String    @default("")
+  especialidad      String    @default("")
+  leyendaNotarial   String?
+  fotoPerfil        String?
+  registrado        Boolean   @default(true)
+  // Credencial de acceso (PIN de 6 dígitos, almacenado como hash SHA-256)
+  pin               String
+
+  procesos          Proceso[]
+  casosFinalizados  CasoFinalizado[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// ============================================
+// PROCESO DE PARTICIÓN (modelo Proceso)
+// ============================================
+model Proceso {
+  id                                 String   @id
+  nombreCaso                         String   @default("")
+  tipoProceso                        String   @default("")
+  regimenSucesoral                   String?
+  tieneCapitulaciones                Boolean  @default(false)
+  porcentajeGanancialesCapitulaciones Float   @default(50)
+  calcularGananciaOcasional          Boolean  @default(true)
+  tarifaGananciaOcasionalPct         Float    @default(15)
+  fechaCreacion                      DateTime
+  fechaUltimaEdicion                 DateTime
+  finalizado                         Boolean  @default(false)
+  pasoActual                         Int      @default(1)
+
+  abogadoId                          String
+  abogado                            Abogado  @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
+
+  bienes                             Bien[]
+  personas                           Persona[]
+  leyes                              Ley[]
+  costo                              CostoProceso?
+
+  createdAt                          DateTime @default(now())
+  updatedAt                          DateTime @updatedAt
+}
+
+// ============================================
+// BIEN INVENTARIADO (modelo Bien)
+// ============================================
+model Bien {
+  id         String  @id
+  nombre     String
+  valor      Float
+  asignadoAId String? // ID de la persona asignada o literal 'comun'
+
+  procesoId  String
+  proceso    Proceso @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// PERSONA PARTICIPANTE (modelo Persona)
+// ============================================
+model Persona {
+  id                      String   @id
+  nombre                  String
+  tipoRelacion            String   @default("Familiar")
+  parentesco              String?
+  bienesAsignadosIds      String?  // Array de IDs codificado como JSON
+  declaradoIndigno        Boolean  @default(false)
+  desheredado             Boolean  @default(false)
+  porcentajeParticipacion Float?   // % para disolución societaria / copropiedad
+
+  procesoId               String
+  proceso                 Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// LEY APLICABLE AL REPARTO (modelo Ley)
+// ============================================
+model Ley {
+  id           String   @id
+  nombre       String
+  porcentaje   Float
+  aplicaA      String   @default("Todas")
+  activa       Boolean  @default(true)
+  descripcion  String?
+  baseCalculo  String?
+  leyPadreId   String?
+
+  procesoId    String
+  proceso      Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// COSTOS / HONORARIOS DEL PROCESO (modelo CostoProceso)
+// ============================================
+model CostoProceso {
+  id                            String   @id @default(cuid())
+  viaProceso                    String?
+  modalidad                     String   @default("porcentaje")
+  abogadoPorcentaje             Float    @default(10)
+  agenciasDerechoPorcentaje     Float    @default(15)
+  juezCostasPorcentaje          Float?
+  abogadoFijoCOP                Float    @default(0)
+  agenciasDerechoFijoCOP        Float    @default(0)
+  juezCostasFijoCOP             Float?
+  quienPagaId                   String?
+  quienPagaNombre               String?
+  quienRecibeId                 String?
+  quienRecibeNombre             String?
+  quienesPaganIds               String?  // Array codificado como JSON
+  quienesPaganNombres           String?  // Array codificado como JSON
+  quienesRecibenIds             String?  // Array codificado como JSON
+  quienesRecibenNombres         String?  // Array codificado como JSON
+  estadoAgencias                String?  // 'estimado' | 'confirmado'
+
+  procesoId                     String   @unique
+  proceso                       Proceso  @relation(fields: [procesoId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// HISTORIAL DE CASOS FINALIZADOS (snapshot)
+// ============================================
+model CasoFinalizado {
+  id                 String   @id
+  procesoId          String   @unique
+  nombreCaso         String
+  tipoProceso        String
+  regimenSucesoral   String?
+  fechaCreacion      DateTime
+  fechaFinalizacion  DateTime
+  patrimonioTotalCOP Float
+  proceso            String   // ProcesoParticion completo codificado como JSON
+  resultado          String   // ResultadoParticion codificado como JSON
+
+  abogadoId          String
+  abogado            Abogado  @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
+}

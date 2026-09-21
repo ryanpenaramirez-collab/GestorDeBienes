@@ -122,7 +122,7 @@ export const Paso1Bienes: React.FC<Paso1BienesProps> = ({
   const handleAgregarBienSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanNombre = nuevoNombre.trim();
-    const valorNumerico = parseFloat(nuevoValor.replace(/\./g, '').replace(/,/g, '.'));
+    const valorNumerico = parseFloat(nuevoValor.replace(/,/g, '.'));
 
     if (!cleanNombre) {
       setErrorBien('Especifique el nombre o razón social del bien o empresa');

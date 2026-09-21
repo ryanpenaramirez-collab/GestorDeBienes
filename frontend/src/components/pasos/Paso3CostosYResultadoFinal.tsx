@@ -1007,9 +1007,10 @@ export const Paso3CostosYResultadoFinal: React.FC<Paso3CostosYResultadoFinalProp
             {resultado.desglosePersonas.map((item, idx) => {
               const estaExcluidoIndigno = item.excluidoPorIndignidad || item.persona.declaradoIndigno;
               const estaDesheredado = item.excluidoPorDesheredamiento || item.persona.desheredado;
-              const impuestoPersonaCOP = Math.round(
-                item.totalAsignadoCOP * ((resultado.gananciaOcasional?.tarifaPorcentaje || 15) / 100)
-              );
+              const aplicaImpuestoPersona =
+                resultado.gananciaOcasional?.aplica &&
+                (item.impuestoGananciaOcasionalCOP || 0) > 0;
+              const impuestoPersonaCOP = item.impuestoGananciaOcasionalCOP || 0;
 
               return (
                 <div
@@ -1120,9 +1121,9 @@ export const Paso3CostosYResultadoFinal: React.FC<Paso3CostosYResultadoFinalProp
                         </div>
                       )}
 
-                      {item.totalAsignadoCOP > 0 && (
+                      {aplicaImpuestoPersona && (
                         <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                          Impuesto Est. (15%): <span className="font-semibold text-slate-700">{formatearMoneda(impuestoPersonaCOP)}</span>
+                          Impuesto Est. ({resultado.gananciaOcasional?.tarifaPorcentaje || 15}%): <span className="font-semibold text-slate-700">{formatearMoneda(impuestoPersonaCOP)}</span>
                         </div>
                       )}
                     </div>

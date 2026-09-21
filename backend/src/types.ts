@@ -5,6 +5,7 @@ export type ParentescoFamiliar = 'Cónyuge' | 'Hijo' | 'Padre' | 'Hermano' | 'Ot
 export type DestinatarioLey = ParentescoFamiliar | 'Amigo/Socio' | 'Todas';
 
 export interface PerfilAbogado {
+  id?: string; // Identificador asignado por el servidor
   nombre: string;
   tarjetaProfesional: string;
   documentoIdentidad: string;

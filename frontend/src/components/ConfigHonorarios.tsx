@@ -286,7 +286,7 @@ export const ConfigHonorarios: React.FC<ConfigHonorariosProps> = ({
   // Estimación referencial del monto de agencias para el desglose de división
   const patrimonioReferencialCOP = useMemo(() => {
     if (casoActivo && casoActivo.bienes.length > 0) {
-      return casoActivo.bienes.reduce((acc, b) => acc + (b.valorCOP || 0), 0);
+      return casoActivo.bienes.reduce((acc, b) => acc + (Number(b.valor) || 0), 0);
     }
     return 100000000; // Valor ilustrativo de $100M si no hay bienes registrados
   }, [casoActivo]);

@@ -135,7 +135,9 @@ export const WizardProceso: React.FC<WizardProcesoProps> = ({
   const handleActualizarInfoGeneral = (
     nombreCaso: string,
     tipoProceso: string,
-    regimen: 'testado' | 'intestado'
+    regimen: 'testado' | 'intestado',
+    tieneCapitulaciones?: boolean,
+    porcentajeGanancialesCapitulaciones?: number
   ) => {
     let nuevasLeyes = proceso.leyes;
     if (regimen !== proceso.regimenSucesoral) {
@@ -150,6 +152,9 @@ export const WizardProceso: React.FC<WizardProcesoProps> = ({
       nombreCaso,
       tipoProceso,
       regimenSucesoral: regimen,
+      tieneCapitulaciones: tieneCapitulaciones ?? proceso.tieneCapitulaciones ?? false,
+      porcentajeGanancialesCapitulaciones:
+        porcentajeGanancialesCapitulaciones ?? proceso.porcentajeGanancialesCapitulaciones ?? 50,
       leyes: nuevasLeyes,
       fechaUltimaEdicion: new Date().toISOString(),
     });
@@ -206,6 +211,14 @@ export const WizardProceso: React.FC<WizardProcesoProps> = ({
       personas: proceso.personas.map((p) =>
         p.id === personaActualizada.id ? personaActualizada : p
       ),
+      fechaUltimaEdicion: new Date().toISOString(),
+    });
+  };
+
+  const handleActualizarPersonas = (personasActualizadas: Persona[]) => {
+    onActualizarProceso({
+      ...proceso,
+      personas: personasActualizadas,
       fechaUltimaEdicion: new Date().toISOString(),
     });
   };
@@ -451,6 +464,7 @@ export const WizardProceso: React.FC<WizardProcesoProps> = ({
             resultado={resultado}
             onAgregarPersona={handleAgregarPersona}
             onActualizarPersona={handleActualizarPersona}
+            onActualizarPersonas={handleActualizarPersonas}
             onEliminarPersona={handleEliminarPersona}
             onToggleLey={handleToggleLey}
             onActualizarPorcentajeLey={handleActualizarPorcentajeLey}
