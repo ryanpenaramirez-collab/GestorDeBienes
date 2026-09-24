@@ -587,6 +587,7 @@ function guardarProcesos(list: ProcesoParticion[]): void {
 export const STORAGE_KEY_PERFIL_ABOGADO = 'gestor_bienes_abogado_perfil';
 export const STORAGE_KEY_AJUSTES_APP = 'gestor_bienes_ajustes_app';
 export const STORAGE_KEY_SESION_ACTIVA = 'gestor_bienes_sesion_activa';
+export const STORAGE_KEY_TOKEN_SESION = 'gestor_bienes_token_sesion';
 
 export const PERFIL_ABOGADO_PREDETERMINADO: PerfilAbogado = {
   nombre: 'Dr. Alejandro Restrepo Salazar',
@@ -675,8 +676,35 @@ export function obtenerEstadoSesion(): boolean {
 export function guardarEstadoSesion(activa: boolean): void {
   try {
     localStorage.setItem(STORAGE_KEY_SESION_ACTIVA, JSON.stringify(activa));
+    // Al cerrar o forzar la salida de sesión, descartar también el token del backend
+    if (!activa) localStorage.removeItem(STORAGE_KEY_TOKEN_SESION);
   } catch (e) {
     console.error('Error guardando estado de sesión:', e);
+  }
+}
+
+export function guardarTokenSesion(token: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_TOKEN_SESION, token);
+  } catch (e) {
+    console.error('Error guardando token de sesión:', e);
+  }
+}
+
+export function obtenerTokenSesion(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY_TOKEN_SESION);
+  } catch (e) {
+    console.error('Error obteniendo token de sesión:', e);
+  }
+  return null;
+}
+
+export function borrarTokenSesion(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY_TOKEN_SESION);
+  } catch (e) {
+    console.error('Error borrando token de sesión:', e);
   }
 }
 

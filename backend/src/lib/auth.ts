@@ -31,7 +31,7 @@ export async function autenticarAbogado(correo: string, pin: string) {
     where: { correo: correoNormalizado },
   });
   if (!abogado) return null;
-  if (hashPin(pin.trim()) !== abogado.pin) return null;
+  if (hashPin(pin.trim()) !== abogado.pinHash) return null;
 
   return abogado;
 }

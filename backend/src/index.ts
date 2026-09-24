@@ -6,11 +6,29 @@ import { procesosRouter } from './routes/procesos';
 import { abogadoRouter } from './routes/abogado';
 import { asegurarAbogadoPorDefecto } from './lib/bootstrap';
 
+// Orígenes permitidos para CORS, configurables mediante CORS_ORIGINS
+// (separados por coma). Por defecto permite el frontend en desarrollo (puerto 3000).
+const corsOrigenes = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 async function main() {
   await asegurarAbogadoPorDefecto();
 
   const app = express();
-  app.use(cors());
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Sin origen (curl, peticiones del mismo servidor) o listado: permitir
+        if (!origin || corsOrigenes.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+        callback(null, false);
+      },
+    }),
+  );
   app.use(express.json({ limit: '10mb' }));
 
   app.get('/api/health', (_req, res) => {

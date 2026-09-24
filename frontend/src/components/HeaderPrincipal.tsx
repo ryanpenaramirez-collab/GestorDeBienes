@@ -26,8 +26,12 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
           className="flex items-center gap-2.5 hover:opacity-90 transition cursor-pointer text-left focus:outline-none"
           title="Ir al inicio de Gestor de Bienes"
         >
-          <div className="w-7 h-7 rounded bg-white text-slate-950 flex items-center justify-center font-serif font-bold text-base shadow-xs">
-            §
+          <div className="w-8 h-8 rounded-lg bg-slate-900 p-1 flex items-center justify-center shadow-xs shrink-0">
+            <img
+              src="/icon.png"
+              alt="Gestor de Bienes"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-sm font-bold tracking-wider uppercase font-serif text-slate-50 flex items-center gap-2">
             Gestor de Bienes

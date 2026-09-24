@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Eye, EyeOff, Sparkles, Info, Shield } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, Info, Shield } from 'lucide-react';
 import { PerfilAbogado } from '../types';
+import { iniciarSesionEnBackend } from '../utils/api';
+import { guardarTokenSesion, guardarPerfilAbogado } from '../utils/storage';
 
 interface LoginScreenProps {
   perfil: PerfilAbogado;
@@ -18,6 +20,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [mostrarPin, setMostrarPin] = useState<boolean>(false);
   const [recordarSesion, setRecordarSesion] = useState<boolean>(true);
   const [errorLogin, setErrorLogin] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState<boolean>(false);
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value;
@@ -55,34 +58,47 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!emailLogin.trim()) {
+  const autenticar = async (correo: string, pin: string) => {
+    setErrorLogin(null);
+    if (!correo.trim()) {
       setErrorLogin('Por favor ingrese su correo electrónico profesional o nombre de usuario.');
       return;
     }
-    if (!pinLogin) {
+    if (!pin) {
       setErrorLogin('Por favor ingrese el PIN de seguridad.');
       return;
     }
-    setErrorLogin(null);
-    onIniciarSesion();
+
+    setEnviando(true);
+    try {
+      const resultado = await iniciarSesionEnBackend(correo, pin);
+      // Persistir la sesión del backend para futuras peticiones autenticadas
+      guardarTokenSesion(resultado.token);
+      guardarPerfilAbogado(resultado.abogado);
+      onIniciarSesion();
+    } catch (e) {
+      setErrorLogin(e instanceof Error ? e.message : 'No se pudo iniciar sesión con el servidor.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
-  const handleAccesoRapido = () => {
-    setEmailLogin(perfil.correo || 'alejandro.restrepo@gestordebienes.legal');
-    setPinLogin('123456');
-    setErrorLogin(null);
-    onIniciarSesion();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    autenticar(emailLogin, pinLogin);
   };
 
   return (
     <div className="min-h-screen w-screen bg-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 select-none font-sans">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-lg space-y-6">
         {/* Logo y Nombre de la Aplicación */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-white font-serif font-bold text-2xl shadow-sm">
-            §
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-xl bg-slate-900 shadow-sm p-2">
+            <img
+              src="/icon.png"
+              alt="Gestor de Bienes"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-xl font-bold tracking-wider uppercase font-serif text-slate-900">
             Gestor de Bienes
@@ -93,7 +109,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
 
         {/* Tarjeta de Inicio de Sesión Profesional */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="bg-white border border-slate-200 rounded-xl p-8 sm:p-10 shadow-xs space-y-6">
           <div className="text-center space-y-2 border-b border-slate-100 pb-4 flex flex-col items-center">
             {perfil.fotoPerfil ? (
               <img
@@ -104,11 +120,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               />
             ) : null}
             <h2 className="text-base font-bold text-slate-900 font-serif">
-              Inicio de Sesión Profesional
+Inicio de Sesión
             </h2>
-            <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-              Ingrese las credenciales del abogado para gestionar expedientes patrimoniales y firmar liquidaciones oficiales.
-            </p>
           </div>
 
           {errorLogin && (
@@ -125,7 +138,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 className="text-xs font-bold text-slate-700 flex items-center gap-1.5"
               >
                 <Mail className="w-3.5 h-3.5 text-slate-700" />
-                <span>Correo Electrónico o Usuario</span>
+                <span>Correo Electrónico</span>
               </label>
               <input
                 id="login-standalone-email"
@@ -199,27 +212,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <button
                 type="submit"
                 id="btn-iniciar-sesion"
-                className="w-full bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2"
+                disabled={enviando}
+                className="w-full bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Lock className="w-3.5 h-3.5" />
-                <span>Iniciar Sesión</span>
-              </button>
-
-              <button
-                type="button"
-                id="btn-acceso-rapido"
-                onClick={handleAccesoRapido}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-2 px-4 rounded-lg text-xs transition-colors border border-slate-300 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-slate-700" />
-                <span>Acceso Rápido como {perfil.nombre || 'Abogado Titular'}</span>
+                <span>{enviando ? 'Verificando credenciales...' : 'Iniciar Sesión'}</span>
               </button>
             </div>
           </form>
-
-          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 text-center leading-relaxed">
-            Almacenamiento local seguro en el navegador. La información del abogado se incorpora automáticamente en la carátula y el pie de firma de los reportes PDF.
-          </div>
         </div>
 
         {/* Footer institucional discreto */}
