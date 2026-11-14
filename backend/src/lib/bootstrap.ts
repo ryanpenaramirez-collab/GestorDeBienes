@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { hashPin } from './auth';
+import { generarCodigoRecuperacion, hashCodigoRecuperacion, hashPin } from './auth';
 
 // Se asegura de que exista el abogado titular por defecto (upsert idempotente).
 // Ejecutado al arrancar el servidor para que el inicio de sesión funcione de inmediato.
@@ -16,12 +16,31 @@ export async function asegurarAbogadoPorDefecto(): Promise<void> {
     areaEspecialidad: 'Derecho de Familia, Sucesiones y Liquidación Patrimonial',
   };
 
+  const existente = await prisma.abogado.findUnique({
+    where: { correo: perfil.correo },
+  });
+
+  const codigoRecuperacion = !existente?.codigoRecuperacionHash
+    ? generarCodigoRecuperacion()
+    : null;
+  const codigoParaCrear = codigoRecuperacion ?? generarCodigoRecuperacion();
+
   await prisma.abogado.upsert({
     where: { correo: perfil.correo },
-    update: perfil,
+    update: {
+      ...perfil,
+      ...(codigoRecuperacion
+        ? {
+            codigoRecuperacionHash: hashCodigoRecuperacion(codigoRecuperacion),
+            codigoRecuperacionPendiente: codigoRecuperacion,
+          }
+        : {}),
+    },
     create: {
       ...perfil,
       pinHash: hashPin('123456'),
+      codigoRecuperacionHash: hashCodigoRecuperacion(codigoParaCrear),
+      codigoRecuperacionPendiente: codigoParaCrear,
     },
   });
 }

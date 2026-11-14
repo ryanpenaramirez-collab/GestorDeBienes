@@ -1,10 +1,25 @@
 import { PrismaClient } from '@prisma/client';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 const prisma = new PrismaClient();
 
 function hashPin(pin: string): string {
   return createHash('sha256').update(pin).digest('hex');
+}
+
+function hashCodigo(codigo: string): string {
+  return createHash('sha256').update(codigo.trim().toUpperCase()).digest('hex');
+}
+
+function generarCodigoRecuperacion(): string {
+  const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(15);
+  const caracteres = Array.from(bytes, (byte) => alfabeto[byte % alfabeto.length]);
+  return [
+    caracteres.slice(0, 5).join(''),
+    caracteres.slice(5, 10).join(''),
+    caracteres.slice(10, 15).join(''),
+  ].join('-');
 }
 
 async function main() {
@@ -20,18 +35,41 @@ async function main() {
     areaEspecialidad: 'Derecho de Familia, Sucesiones y Liquidación Patrimonial',
   };
 
+  const existente = await prisma.abogado.findUnique({
+    where: { correo: perfil.correo },
+  });
+  const codigoRecuperacion = !existente?.codigoRecuperacionHash
+    ? generarCodigoRecuperacion()
+    : null;
+  const codigoParaCrear = codigoRecuperacion ?? generarCodigoRecuperacion();
+
   const abogado = await prisma.abogado.upsert({
     where: { correo: perfil.correo },
-    update: perfil,
+    update: {
+      ...perfil,
+      ...(codigoRecuperacion
+        ? {
+            codigoRecuperacionHash: hashCodigo(codigoRecuperacion),
+            codigoRecuperacionPendiente: codigoRecuperacion,
+          }
+        : {}),
+    },
     create: {
       ...perfil,
       pinHash: hashPin('123456'),
+      codigoRecuperacionHash: hashCodigo(codigoParaCrear),
+      codigoRecuperacionPendiente: codigoParaCrear,
     },
   });
 
   console.log(
     `Abogado ${abogado.nombreCompleto} listo (correo: ${abogado.correo}, PIN de acceso: 123456)`
   );
+  if (codigoRecuperacion) {
+    console.log(
+      `Código de recuperación (se mostrará una sola vez en la app): ${codigoRecuperacion}`,
+    );
+  }
 }
 
 main()

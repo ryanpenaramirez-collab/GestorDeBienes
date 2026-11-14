@@ -28,6 +28,10 @@ model Abogado {
   paginaWeb         String?
   fotoPerfilUrl     String?
   pinHash           String   // PIN de 6 dígitos, siempre guardado con hash, nunca en texto plano
+  intentosFallidos  Int      @default(0)
+  bloqueadoHasta    DateTime?
+  codigoRecuperacionHash String?
+  codigoRecuperacionPendiente String? // Se muestra una única vez al iniciar sesión y luego se borra
   temaVisual        TemaVisual @default(BLANCO_CORPORATIVO)
   densidadTablas    DensidadTablas @default(COMODA)
 
