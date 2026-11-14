@@ -20,9 +20,12 @@ import {
   AlertCircle,
   Camera,
   Upload,
+  Download,
+  Database,
   Trash2,
 } from 'lucide-react';
 import { PerfilAbogado, AjustesApp } from '../types';
+import { crearRespaldoJSON, restaurarRespaldoJSON } from '../utils/storage';
 
 // Valida si un texto cumple el formato de una URL válida (o si está vacío/opcional)
 export function esUrlValida(url?: string): boolean {
@@ -92,6 +95,11 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
   // Error de validación de URL
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
 
+  // Respaldo local
+  const archivoRespaldoRef = useRef<HTMLInputElement | null>(null);
+  const [mensajeRespaldo, setMensajeRespaldo] = useState<string | null>(null);
+  const [errorRespaldo, setErrorRespaldo] = useState<string | null>(null);
+
   // Feedback de guardado
   const [guardadoFeedback, setGuardadoFeedback] = useState<boolean>(false);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,6 +162,62 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
     setPerfil({ ...perfilGuardado });
     setAjustes({ ...ajustesGuardados });
     setErrorUrl(null);
+  };
+
+  const handleExportarRespaldo = () => {
+    try {
+      const contenido = crearRespaldoJSON();
+      const blob = new Blob([contenido], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement('a');
+      const fecha = new Date().toISOString().slice(0, 10);
+      enlace.href = url;
+      enlace.download = `gestor-de-bienes-respaldo-${fecha}.json`;
+      document.body.appendChild(enlace);
+      enlace.click();
+      document.body.removeChild(enlace);
+      URL.revokeObjectURL(url);
+      setErrorRespaldo(null);
+      setMensajeRespaldo('Respaldo exportado correctamente. Guárdelo en un lugar seguro.');
+    } catch (e) {
+      console.error('Error exportando respaldo:', e);
+      setMensajeRespaldo(null);
+      setErrorRespaldo('No se pudo exportar el respaldo.');
+    }
+  };
+
+  const handleSeleccionarArchivoRespaldo = () => {
+    setMensajeRespaldo(null);
+    setErrorRespaldo(null);
+    archivoRespaldoRef.current?.click();
+  };
+
+  const handleImportarRespaldo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!archivo) return;
+
+    const confirmado = window.confirm(
+      'Importar este respaldo reemplazará los datos actuales de leyes, honorarios, expedientes, perfil y ajustes guardados en este equipo. ¿Desea continuar?',
+    );
+    if (!confirmado) return;
+
+    try {
+      const contenido = await archivo.text();
+      const resultado = restaurarRespaldoJSON(contenido);
+      if (!resultado.ok) {
+        setMensajeRespaldo(null);
+        setErrorRespaldo(resultado.error || 'No se pudo importar el respaldo.');
+        return;
+      }
+      setErrorRespaldo(null);
+      setMensajeRespaldo('Respaldo importado correctamente. Recargando la aplicación...');
+      setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+      console.error('Error importando respaldo:', error);
+      setMensajeRespaldo(null);
+      setErrorRespaldo('No se pudo leer el archivo de respaldo.');
+    }
   };
 
   // Volver: conserva la configuración activa confirmada y regresa sin modificar nada
@@ -985,7 +1049,7 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
                     <div className="flex flex-col gap-0.5">
                       <span className="font-bold text-slate-900">Autoguardado Local Continuo</span>
                       <span className="text-[11px] text-slate-500">
-                        Guarda inmediatamente cada cambio en el almacenamiento local seguro del navegador.
+                        Guarda cada cambio en este equipo. No es una copia de seguridad: conviene exportar un respaldo con frecuencia.
                       </span>
                     </div>
                     <input
@@ -996,6 +1060,71 @@ export const ConfiguracionGeneral: React.FC<ConfiguracionGeneralProps> = ({
                     />
                   </label>
                 </div>
+              </div>
+
+              {/* Respaldo y almacenamiento local */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-4">
+                <div className="border-b border-slate-200 pb-3">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <Database className="w-4 h-4 text-slate-900" />
+                    5. Almacenamiento y Respaldo de Datos
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                    Los datos se guardan en este equipo, en el almacenamiento local de la
+                    aplicación. No se sincronizan automáticamente en la nube ni en otros
+                    dispositivos, por lo que conviene exportar respaldos con frecuencia.
+                  </p>
+                </div>
+
+                {mensajeRespaldo && (
+                  <div className="text-xs text-emerald-900 bg-emerald-50 border border-emerald-300 rounded-lg px-3 py-2 flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                    <span>{mensajeRespaldo}</span>
+                  </div>
+                )}
+
+                {errorRespaldo && (
+                  <div className="text-xs text-red-900 bg-red-50 border border-red-300 rounded-lg px-3 py-2 flex items-center gap-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-700 shrink-0" />
+                    <span>{errorRespaldo}</span>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <button
+                    type="button"
+                    id="btn-exportar-respaldo"
+                    onClick={handleExportarRespaldo}
+                    className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Exportar respaldo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="btn-importar-respaldo"
+                    onClick={handleSeleccionarArchivoRespaldo}
+                    className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Importar respaldo</span>
+                  </button>
+
+                  <input
+                    ref={archivoRespaldoRef}
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={handleImportarRespaldo}
+                    className="hidden"
+                  />
+                </div>
+
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  El respaldo incluye expedientes, leyes, honorarios, perfil y ajustes. No incluye
+                  la sesión activa ni el PIN de acceso. Al importar, los datos actuales serán
+                  reemplazados por los del archivo.
+                </p>
               </div>
             </div>
           )}

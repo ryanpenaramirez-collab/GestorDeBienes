@@ -16,14 +16,14 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
   notificacion,
 }) => {
   return (
-    <header className="bg-slate-900 text-white px-6 py-2.5 flex items-center justify-between border-b border-slate-800 shrink-0 z-20 shadow-xs select-none">
+    <header className="bg-slate-900 text-white px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-800 shrink-0 z-20 shadow-xs select-none w-full">
       {/* 1. Nombre de la aplicación */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           id="hdr-btn-logo-inicio"
           onClick={() => onNavegar('home')}
-          className="flex items-center gap-2.5 hover:opacity-90 transition cursor-pointer text-left focus:outline-none"
+          className="flex items-center gap-2.5 hover:opacity-90 transition cursor-pointer text-left focus:outline-none min-w-0"
           title="Ir al inicio de Gestor de Bienes"
         >
           <div className="w-8 h-8 rounded-lg bg-slate-900 p-1 flex items-center justify-center shadow-xs shrink-0">
@@ -33,22 +33,22 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
               className="w-full h-full object-contain"
             />
           </div>
-          <h1 className="text-sm font-bold tracking-wider uppercase font-serif text-slate-50 flex items-center gap-2">
+          <h1 className="text-sm font-bold tracking-wider uppercase font-serif text-slate-50 flex items-center gap-2 truncate">
             Gestor de Bienes
           </h1>
         </button>
       </div>
 
       {/* 2. Navegación Principal Única y Perfil Profesional */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 min-w-0 max-w-full">
         {/* Botón 1: Leyes */}
         <button
           type="button"
           id="hdr-btn-leyes"
           onClick={() => onNavegar('config-leyes')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border whitespace-nowrap ${
             vistaActual === 'config-leyes'
-              ? 'bg-white text-slate-950 border-white shadow-xs'
+              ? 'bg-white text-slate-950 border-white shadow-xs ring-2 ring-white/30'
               : 'bg-slate-800/80 text-slate-200 hover:text-white hover:bg-slate-800 border-slate-700'
           }`}
         >
@@ -61,14 +61,15 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
           type="button"
           id="hdr-btn-honorarios"
           onClick={() => onNavegar('config-honorarios')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border whitespace-nowrap ${
             vistaActual === 'config-honorarios'
-              ? 'bg-white text-slate-950 border-white shadow-xs'
+              ? 'bg-white text-slate-950 border-white shadow-xs ring-2 ring-white/30'
               : 'bg-slate-800/80 text-slate-200 hover:text-white hover:bg-slate-800 border-slate-700'
           }`}
         >
           <ReceiptText className="w-3.5 h-3.5" />
-          <span>Honorarios y Costos</span>
+          <span className="hidden sm:inline">Honorarios y Costos</span>
+          <span className="sm:hidden">Honorarios</span>
         </button>
 
         {/* Botón 3: Configuración */}
@@ -76,9 +77,9 @@ export const HeaderPrincipal: React.FC<HeaderPrincipalProps> = ({
           type="button"
           id="hdr-btn-configuracion"
           onClick={() => onNavegar('config-general')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border whitespace-nowrap ${
             vistaActual === 'config-general'
-              ? 'bg-white text-slate-950 border-white shadow-xs'
+              ? 'bg-white text-slate-950 border-white shadow-xs ring-2 ring-white/30'
               : 'bg-slate-800/80 text-slate-200 hover:text-white hover:bg-slate-800 border-slate-700'
           }`}
         >

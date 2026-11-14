@@ -60,7 +60,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">Nueva Partición</h3>
-              <p className="text-xs text-slate-500">Guardado local automático en el dispositivo.</p>
+              <p className="text-xs text-slate-500">
+                Los datos se guardan en este equipo. Conviene exportar respaldos desde Configuración.
+              </p>
             </div>
           </div>
 
@@ -85,7 +87,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </h3>
             </div>
             <span className="text-[11px] text-slate-500">
-              Guardados localmente
+              Guardados en este equipo
             </span>
           </div>
 

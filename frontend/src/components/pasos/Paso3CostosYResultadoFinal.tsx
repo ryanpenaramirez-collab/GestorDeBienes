@@ -305,7 +305,7 @@ export const Paso3CostosYResultadoFinal: React.FC<Paso3CostosYResultadoFinalProp
               onClick={() => handleCambiarViaProceso('notarial')}
               className={`p-3.5 rounded-xl border-2 text-left transition flex items-start gap-3 cursor-pointer ${
                 esNotarial
-                  ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900/10'
+                  ? 'border-slate-900 bg-slate-100 ring-2 ring-slate-900/15'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
@@ -336,7 +336,7 @@ export const Paso3CostosYResultadoFinal: React.FC<Paso3CostosYResultadoFinalProp
               onClick={() => handleCambiarViaProceso('judicial')}
               className={`p-3.5 rounded-xl border-2 text-left transition flex items-start gap-3 cursor-pointer ${
                 esJudicial
-                  ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900/10'
+                  ? 'border-slate-900 bg-slate-100 ring-2 ring-slate-900/15'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >

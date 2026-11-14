@@ -216,7 +216,7 @@ export const Paso1Bienes: React.FC<Paso1BienesProps> = ({
               onClick={() => handleCambiarRegimen('testado')}
               className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                 regimenActual === 'testado'
-                  ? 'border-slate-900 bg-slate-50/70 shadow-xs'
+                  ? 'border-slate-900 bg-slate-100 ring-2 ring-slate-900/15 shadow-xs'
                   : 'border-slate-200 bg-white hover:border-slate-300 opacity-80'
               }`}
             >
@@ -248,7 +248,7 @@ export const Paso1Bienes: React.FC<Paso1BienesProps> = ({
               onClick={() => handleCambiarRegimen('intestado')}
               className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                 regimenActual === 'intestado'
-                  ? 'border-slate-900 bg-slate-50/70 shadow-xs'
+                  ? 'border-slate-900 bg-slate-100 ring-2 ring-slate-900/15 shadow-xs'
                   : 'border-slate-200 bg-white hover:border-slate-300 opacity-80'
               }`}
             >

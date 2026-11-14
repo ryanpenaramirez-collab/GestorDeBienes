@@ -29,7 +29,7 @@ import { ConfigHonorarios } from './components/ConfigHonorarios';
 import { ConfiguracionGeneral } from './components/ConfiguracionGeneral';
 import { LoginScreen } from './components/LoginScreen';
 import { HeaderPrincipal } from './components/HeaderPrincipal';
-import { Scale } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export default function App() {
   const [vista, setVista] = useState<'home' | 'wizard' | 'config-leyes' | 'config-honorarios' | 'config-general'>('home');
@@ -242,6 +242,11 @@ export default function App() {
           />
         )}
       </main>
+
+      <footer className="shrink-0 bg-slate-100 border-t border-slate-200 px-4 py-1.5 text-[11px] text-slate-700 flex items-center justify-center gap-1.5 text-center select-none">
+        <Info className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+        <span>Herramienta de apoyo: no reemplaza la revisión de un abogado.</span>
+      </footer>
     </div>
   );
 }

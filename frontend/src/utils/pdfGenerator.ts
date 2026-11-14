@@ -551,13 +551,20 @@ export function generarPDFParticion(
     doc.text('Despacho / Notaría ___________', pageWidth - margin - 20 - firmaWidth / 2, currentY + 22, { align: 'center' });
   }
 
-  // Numeración de páginas
+  // Numeración de páginas y aviso de alcance profesional
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(...colorGris);
+    doc.text(
+      'Aviso: herramienta de apoyo. No reemplaza la revisión de un abogado.',
+      pageWidth / 2,
+      pageHeight - 28,
+      { align: 'center' }
+    );
+    doc.setFontSize(7.5);
     doc.text(
       `Gestor de Bienes — Expediente: ${casoNombre} — Página ${i} de ${totalPages}`,
       pageWidth / 2,

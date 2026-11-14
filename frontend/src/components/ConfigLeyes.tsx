@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Trash2, BookOpen, AlertCircle, Check, Search, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  BookOpen,
+  AlertCircle,
+  Check,
+  Search,
+  X,
+  RotateCcw,
+} from 'lucide-react';
 import { Ley, DestinatarioLey } from '../types';
+import { LEYES_PREDETERMINADAS } from '../utils/storage';
 import { InputPorcentaje } from './InputPorcentaje';
 
 interface ConfigLeyesProps {
@@ -171,6 +182,12 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
   };
 
   const handleEliminarLey = (id: string) => {
+    const ley = listaLeyes.find((l) => l.id === id);
+    const confirmado = window.confirm(
+      `¿Confirma que desea eliminar "${ley?.nombre || 'esta ley'}" del catálogo general?`,
+    );
+    if (!confirmado) return;
+
     const actualizada = listaLeyes.filter((l) => l.id !== id);
     setListaLeyes(actualizada);
   };
@@ -184,8 +201,44 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
 
   const handleAplicarLeyes = () => {
     if (!hayCambiosPendientes) return;
+
+    const modificaLeyesExistentes = leyesGuardadas.some((leyGuardada) => {
+      const leyActual = listaLeyes.find((l) => l.id === leyGuardada.id);
+      if (!leyActual) return false;
+      return (
+        leyActual.nombre !== leyGuardada.nombre ||
+        Number(leyActual.porcentaje) !== Number(leyGuardada.porcentaje) ||
+        leyActual.aplicaA !== leyGuardada.aplicaA ||
+        (leyActual.descripcion || '') !== (leyGuardada.descripcion || '')
+      );
+    });
+
+    if (
+      modificaLeyesExistentes &&
+      !window.confirm(
+        'Va a modificar una o más leyes existentes del catálogo. ¿Confirma que desea aplicar estos cambios?',
+      )
+    ) {
+      return;
+    }
+
     onGuardarLeyes(listaLeyes);
     setLeyesGuardadas(listaLeyes);
+    mostrarFeedback();
+  };
+
+  const handleRestablecerValoresLegales = () => {
+    const confirmado = window.confirm(
+      'Esta acción devolverá el catálogo de leyes a sus valores originales y reemplazará los cambios actuales. ¿Desea continuar?',
+    );
+    if (!confirmado) return;
+
+    const originales = LEYES_PREDETERMINADAS.map((ley) => ({ ...ley }));
+    setListaLeyes(originales);
+    setLeyesGuardadas(originales);
+    onGuardarLeyes(originales);
+    setBusqueda('');
+    setErrorInput(null);
     mostrarFeedback();
   };
 
@@ -253,7 +306,7 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej: Cuarta de Libre Disposición"
+                  placeholder="Ej: Libre Disposición con 50 % (Ley 1934 de 2018)"
                   className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition shadow-2xs"
                 />
               </div>
@@ -267,7 +320,7 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
                   type="text"
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
-                  placeholder="Ej: Artículo 1240 del Código Civil"
+                  placeholder="Ej: Porción de libre asignación (Ley 1934 de 2018)"
                   className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition shadow-2xs"
                 />
               </div>
@@ -286,7 +339,7 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
                     allowEmpty={true}
                     min={0}
                     max={100}
-                    placeholder="25.00"
+                    placeholder="50.00"
                     className="w-full bg-white border border-slate-300 rounded-lg pl-3 pr-6 py-1.5 text-xs text-slate-800 font-mono placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition shadow-2xs text-right font-bold"
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-mono select-none">
@@ -477,7 +530,16 @@ export const ConfigLeyes: React.FC<ConfigLeyesProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-3 self-end sm:self-auto">
+        <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={handleRestablecerValoresLegales}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-950 px-3 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restablecer valores legales</span>
+          </button>
+
           {hayCambiosPendientes && (
             <button
               type="button"

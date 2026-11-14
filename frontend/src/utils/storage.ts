@@ -708,3 +708,79 @@ export function borrarTokenSesion(): void {
   }
 }
 
+// -------------------------------------------------------------
+// RESPALDO LOCAL: EXPORTAR E IMPORTAR DATOS DE ESTE EQUIPO
+// -------------------------------------------------------------
+
+export const CLAVES_RESPALDO = [
+  STORAGE_KEY_PROCESOS,
+  STORAGE_KEY_CASOS_FINALIZADOS,
+  STORAGE_KEY_LEYES_GRAL,
+  STORAGE_KEY_HONORARIOS_GRAL,
+  STORAGE_KEY_PERFIL_ABOGADO,
+  STORAGE_KEY_AJUSTES_APP,
+];
+
+interface ArchivoRespaldo {
+  aplicacion: string;
+  version: number;
+  fechaExportacion: string;
+  datos: Record<string, string>;
+}
+
+export function crearRespaldoJSON(): string {
+  const datos: Record<string, string> = {};
+  for (const clave of CLAVES_RESPALDO) {
+    const valor = localStorage.getItem(clave);
+    if (valor !== null) datos[clave] = valor;
+  }
+
+  const respaldo: ArchivoRespaldo = {
+    aplicacion: 'Gestor de Bienes',
+    version: 1,
+    fechaExportacion: new Date().toISOString(),
+    datos,
+  };
+
+  return JSON.stringify(respaldo, null, 2);
+}
+
+export function restaurarRespaldoJSON(
+  contenido: string,
+): { ok: boolean; claves?: number; error?: string } {
+  let parsed: Partial<ArchivoRespaldo>;
+  try {
+    parsed = JSON.parse(contenido) as Partial<ArchivoRespaldo>;
+  } catch {
+    return { ok: false, error: 'El archivo seleccionado no contiene un respaldo válido.' };
+  }
+
+  if (
+    !parsed ||
+    parsed.aplicacion !== 'Gestor de Bienes' ||
+    !parsed.datos ||
+    typeof parsed.datos !== 'object'
+  ) {
+    return { ok: false, error: 'El archivo no corresponde a un respaldo de Gestor de Bienes.' };
+  }
+
+  const clavesPresentes = CLAVES_RESPALDO.filter(
+    (clave) => typeof parsed.datos?.[clave] === 'string',
+  );
+
+  if (clavesPresentes.length === 0) {
+    return { ok: false, error: 'El respaldo no contiene datos reconocibles para importar.' };
+  }
+
+  try {
+    for (const clave of clavesPresentes) {
+      localStorage.setItem(clave, parsed.datos[clave]);
+    }
+  } catch (e) {
+    console.error('Error restaurando respaldo:', e);
+    return { ok: false, error: 'No se pudo guardar el respaldo en este equipo.' };
+  }
+
+  return { ok: true, claves: clavesPresentes.length };
+}
+

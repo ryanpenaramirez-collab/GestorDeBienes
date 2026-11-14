@@ -663,8 +663,10 @@ export const Paso2PersonasYLeyes: React.FC<Paso2PersonasYLeyesProps> = ({
             return (
               <div
                 key={ley.id}
-                className={`p-4 transition-colors ${
-                  ley.activa ? 'bg-slate-50/40' : 'bg-white opacity-60'
+                className={`p-4 border-l-4 transition-colors ${
+                  ley.activa
+                    ? 'bg-slate-100/80 border-l-slate-900'
+                    : 'bg-white border-l-transparent opacity-60'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -691,12 +693,12 @@ export const Paso2PersonasYLeyes: React.FC<Paso2PersonasYLeyesProps> = ({
                         >
                           {ley.nombre}
                         </span>
-                        <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
+                        <span className="text-[10px] bg-white text-slate-700 px-1.5 py-0.2 rounded border border-slate-300 shrink-0">
                           {ley.aplicaA}
                         </span>
                       </div>
                       {ley.descripcion && (
-                        <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                        <p className="text-[11px] text-slate-600 mt-0.5 truncate">
                           {ley.descripcion}
                         </p>
                       )}
